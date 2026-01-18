@@ -18,8 +18,8 @@ function unlock() {
 
 // Save or edit person
 function savePerson() {
-  const name = document.getElementById("name").value;
-  const phone = document.getElementById("phone").value;
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
   const cards = Number(document.getElementById("cards").value);
 
   if (!name || !cards) return;
@@ -27,16 +27,18 @@ function savePerson() {
   const money = cards * PRICE_PER_CARD;
 
   if (editIndex === null) {
+    // Adding new person (they owe money)
     people.push({ name, phone, cards, money });
-    addAction(`Added ${name}`, money);
+    totalOwed += money; 
+    addAction(`Owes: ${name}`, money); // only log people who owe
   } else {
-    totalOwed -= people[editIndex].money; 
-    addAction(`Edited ${people[editIndex].name}`, money);
+    // Editing existing person - do NOT log in table
+    const oldMoney = people[editIndex].money;
+    totalOwed = totalOwed - oldMoney + money; // update totalOwed correctly
     people[editIndex] = { name, phone, cards, money };
     editIndex = null;
   }
 
-  totalOwed += money;
   saveAll();
   clearFields();
   render();
@@ -79,7 +81,7 @@ function render() {
   });
   totalEarnedEl.textContent = `$${sumEarned.toFixed(2)}`;
 
-  // Render action table
+  // Render action table (only Owes & Settled)
   tableBody.innerHTML = "";
   actions.forEach(a => {
     const tr = document.createElement("tr");
@@ -95,13 +97,13 @@ function editPerson(i) {
   document.getElementById("phone").value = p.phone;
   document.getElementById("cards").value = p.cards;
   editIndex = i;
-  totalOwed -= p.money;
+  // totalOwed adjustment is now handled in savePerson()
 }
 
 // Delete person
 function deletePerson(i) {
   totalOwed -= people[i].money;
-  addAction(`Deleted ${people[i].name}`, people[i].money);
+  // No action log for delete
   people.splice(i, 1);
   saveAll();
   render();
@@ -120,7 +122,7 @@ function settlePerson(i) {
   const money = person.money;
   totalOwed -= money;
   earned.push(money);
-  addAction(`Settled payment for ${person.name}`, money);
+  addAction(`Settled: ${person.name}`, money); // log settlements
   people.splice(i, 1);
   saveAll();
   render();
