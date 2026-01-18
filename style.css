@@ -12,7 +12,7 @@ body {
   padding: 20px;
 }
 
-h1 {
+h1, h2, h3 {
   text-align: center;
 }
 
@@ -21,17 +21,19 @@ input, button {
   padding: 12px;
   margin-top: 10px;
   font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
 }
 
 button {
   background: #007aff;
   color: white;
   border: none;
-  border-radius: 8px;
 }
 
 .secondary {
   background: #555;
+  color: white;
 }
 
 li {
@@ -42,12 +44,32 @@ li {
 }
 
 .actions button {
-  width: 48%;
+  width: 30%;
   margin-top: 5px;
+  margin-right: 2%;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #007aff;
+  color: white;
+}
+
+td {
+  background: #f9f9f9;
 }
 
 .hidden {
   display: none;
 }
-
-  

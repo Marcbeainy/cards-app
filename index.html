@@ -1,39 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="apple-touch-icon" href="icon.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cards Tracker</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="app">
 
-<div class="app">
-  <h1>Cards Tracker</h1>
+    <!-- Lock screen -->
+    <div id="lockScreen">
+      <h2>Enter Password</h2>
+      <input id="password" type="password" placeholder="Password">
+      <button onclick="unlock()">Unlock</button>
+    </div>
 
-  <div id="lockScreen">
-    <input id="password" type="password" placeholder="Enter password">
-    <button onclick="unlock()">Unlock</button>
+    <!-- Main app -->
+    <div id="mainApp" class="hidden">
+      <h1>Cards Tracker Film Saint Charbel 2026</h1>
+
+      <input id="name" placeholder="Name">
+      <input id="cards" type="number" placeholder="Cards taken">
+      <button onclick="savePerson()">Save</button>
+
+      <h3 id="total"></h3>
+
+      <ul id="list"></ul>
+
+      <h3>Earned so far: <span id="totalEarned">$0.00</span></h3>
+      <ul id="earnedList"></ul>
+
+      <h3>Action Log</h3>
+      <table id="actionTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Action</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <button class="secondary" onclick="exportData()">Export Backup</button>
+      <input type="file" onchange="importData(event)">
+      <button class="secondary" onclick="resetAll()">Reset All Data</button>
+    </div>
   </div>
 
-  <div id="mainApp" class="hidden">
-    <input id="name" placeholder="Name">
-    <input id="cards" type="number" placeholder="Cards taken">
-    <input id="price" type="number" placeholder="Price per card">
-
-    <button onclick="savePerson()">Save</button>
-
-    <h3 id="total"></h3>
-
-    <ul id="list"></ul>
-
-    <button class="secondary" onclick="exportData()">Export Backup</button>
-    <input type="file" onchange="importData(event)">
-  </div>
-</div>
-
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
-
