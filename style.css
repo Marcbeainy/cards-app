@@ -1,0 +1,53 @@
+body {
+  font-family: system-ui;
+  background: #f2f2f7;
+  margin: 0;
+}
+
+.app {
+  max-width: 420px;
+  margin: auto;
+  background: white;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+button {
+  background: #007aff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+
+.secondary {
+  background: #555;
+}
+
+li {
+  background: #eee;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.actions button {
+  width: 48%;
+  margin-top: 5px;
+}
+
+.hidden {
+  display: none;
+}
+
+  

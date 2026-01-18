@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="apple-touch-icon" href="icon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cards Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+  <h1>Cards Tracker</h1>
+
+  <div id="lockScreen">
+    <input id="password" type="password" placeholder="Enter password">
+    <button onclick="unlock()">Unlock</button>
+  </div>
+
+  <div id="mainApp" class="hidden">
+    <input id="name" placeholder="Name">
+    <input id="cards" type="number" placeholder="Cards taken">
+    <input id="price" type="number" placeholder="Price per card">
+
+    <button onclick="savePerson()">Save</button>
+
+    <h3 id="total"></h3>
+
+    <ul id="list"></ul>
+
+    <button class="secondary" onclick="exportData()">Export Backup</button>
+    <input type="file" onchange="importData(event)">
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
+
