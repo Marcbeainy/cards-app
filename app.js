@@ -1,5 +1,5 @@
 const APP_PASSWORD = "1234"; 
-const PRICE_PER_CARD = 10; // always $10 per card
+const PRICE_PER_CARD = 10; // fixed price per card
 let people = JSON.parse(localStorage.getItem("people")) || [];
 let totalOwed = Number(localStorage.getItem("totalOwed")) || 0;
 let earned = JSON.parse(localStorage.getItem("earned")) || []; 
@@ -19,6 +19,7 @@ function unlock() {
 // Save or edit person
 function savePerson() {
   const name = document.getElementById("name").value;
+  const phone = document.getElementById("phone").value;
   const cards = Number(document.getElementById("cards").value);
 
   if (!name || !cards) return;
@@ -26,12 +27,12 @@ function savePerson() {
   const money = cards * PRICE_PER_CARD;
 
   if (editIndex === null) {
-    people.push({ name, cards, money });
+    people.push({ name, phone, cards, money });
     addAction(`Added ${name}`, money);
   } else {
     totalOwed -= people[editIndex].money; 
     addAction(`Edited ${people[editIndex].name}`, money);
-    people[editIndex] = { name, cards, money };
+    people[editIndex] = { name, phone, cards, money };
     editIndex = null;
   }
 
@@ -54,7 +55,7 @@ function render() {
   people.forEach((p, i) => {
     const li = document.createElement("li");
     li.innerHTML = `
-      <strong>${p.name}</strong><br>
+      <strong>${p.name}</strong> (${p.phone})<br>
       ${p.cards} cards – $${p.money.toFixed(2)}
       <div class="actions">
         <button onclick="editPerson(${i})">Edit</button>
@@ -91,6 +92,7 @@ function render() {
 function editPerson(i) {
   const p = people[i];
   document.getElementById("name").value = p.name;
+  document.getElementById("phone").value = p.phone;
   document.getElementById("cards").value = p.cards;
   editIndex = i;
   totalOwed -= p.money;
@@ -108,6 +110,7 @@ function deletePerson(i) {
 // Clear inputs
 function clearFields() {
   document.getElementById("name").value = "";
+  document.getElementById("phone").value = "";
   document.getElementById("cards").value = "";
 }
 
