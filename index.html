@@ -3,53 +3,85 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cards Tracker</title>
+  <title>Saint Charbel Movie Event 2026</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app">
 
-    <!-- Lock screen -->
-    <div id="lockScreen">
-      <h2>Enter Password</h2>
-      <input id="password" type="password" placeholder="Password">
-      <button onclick="unlock()">Unlock</button>
+<!-- LOCK -->
+<div id="lock" class="container">
+  <div class="card center">
+    <h2>🔒 Locked</h2>
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="unlock()">Unlock</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="container hidden">
+
+  <!-- INVENTORY -->
+  <div class="card">
+    <h3>Inventory</h3>
+    <input id="totalCardsInput" type="number" placeholder="Total cards you have">
+    <button onclick="saveTotalCards()">Save</button>
+
+    <div class="stats">
+      <div>Total<br><b id="totalCards">0</b></div>
+      <div>Given<br><b id="givenCards">0</b></div>
+      <div>Sold<br><b id="soldCards">0</b></div>
+      <div>Remaining<br><b id="remainingCards">0</b></div>
     </div>
 
-    <!-- Main app -->
-    <div id="mainApp" class="hidden">
-      <h1>Cards Tracker Film Saint Charbel 2026</h1>
-
-      <input id="name" placeholder="Name">
-      <input id="phone" placeholder="Phone Number">
-      <input id="cards" type="number" placeholder="Cards taken">
-      <button onclick="savePerson()">Save</button>
-
-      <h3 id="total"></h3>
-
-      <ul id="list"></ul>
-
-      <h3>Earned so far: <span id="totalEarned">$0.00</span></h3>
-      <ul id="earnedList"></ul>
-
-      <h3>Action Log</h3>
-      <table id="actionTable">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Action</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-
-      <button class="secondary" onclick="exportData()">Export Backup</button>
-      <input type="file" onchange="importData(event)">
-      <button class="secondary" onclick="resetAll()">Reset All Data</button>
-    </div>
+    <p>Total owed: <b id="totalOwed">$0</b></p>
+    <p>Earned: <b id="earned">$0</b></p>
   </div>
 
-  <script src="app.js"></script>
+  <!-- ADD / EDIT PERSON -->
+  <div class="card">
+    <h3>Add / Edit Person</h3>
+    <input id="name" placeholder="Name">
+    <input id="phone" placeholder="Phone">
+    <input id="cards" type="number" placeholder="Cards taken">
+    <button onclick="savePerson()">Save</button>
+  </div>
+
+  <!-- DONATION -->
+  <div class="card">
+    <h3>Donation</h3>
+    <input id="donationAmount" type="number" placeholder="Enter donation amount">
+    <button onclick="addDonation()">Add Donation</button>
+  </div>
+
+  <!-- PEOPLE BAR -->
+  <div class="card">
+    <h3>People</h3>
+    <ul id="peopleList"></ul>
+  </div>
+
+  <!-- STATUS TABLE -->
+  <div class="card">
+    <h3>Event Status</h3>
+    <table id="statusTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Taken</th>
+          <th>Returned</th>
+          <th>Remaining</th>
+          <th>Owed</th>
+          <th>Paid</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <button class="danger" onclick="resetAll()">Reset All</button>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
