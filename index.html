@@ -53,6 +53,14 @@
     <button onclick="addDonation()">Add Donation</button>
   </div>
 
+  <!-- BACKUP / EXCEL -->
+  <div class="card">
+    <h3>Backup & Reports</h3>
+    <button onclick="backupData()">Backup Data</button>
+    <button onclick="exportExcel()">Download Excel Report</button>
+    <input type="file" accept=".json" onchange="restoreData(event)">
+  </div>
+
   <!-- PEOPLE BAR -->
   <div class="card">
     <h3>People</h3>

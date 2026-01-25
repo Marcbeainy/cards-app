@@ -48,22 +48,12 @@ function savePerson() {
     });
   } else {
     const p = people[editIndex];
-
     p.name = name;
     p.phone = phone;
     p.cardsTaken = cardsTaken;
-
-    if (p.cardsReturned > p.cardsTaken) {
-      p.cardsReturned = p.cardsTaken;
-    }
-
-    p.cardsRemaining = p.cardsTaken - p.cardsReturned;
+    // Fix: Remaining is Taken minus both physically Returned and already Paid for
+    p.cardsRemaining = p.cardsTaken - p.cardsReturned - (p.paidAmount / CARD_PRICE);
     p.moneyOwed = p.cardsRemaining * CARD_PRICE;
-
-    if (p.cardsRemaining > 0) {
-      p.settled = false;
-    }
-
     editIndex = null;
   }
 
@@ -76,36 +66,35 @@ function savePerson() {
 function editPerson(i) {
   const p = people[i];
   editIndex = i;
-
   document.getElementById("name").value = p.name;
   document.getElementById("phone").value = p.phone;
   document.getElementById("cards").value = p.cardsTaken;
 }
 
-/* ---------- RETURN CARDS ---------- */
+/* ---------- RETURN ---------- */
 function returnCards(i) {
   const p = people[i];
-  const max = p.cardsRemaining;
-  const returned = Number(prompt(`Return cards (max ${max})`));
-
-  if (!returned || returned <= 0 || returned > max) return;
-
+  const returned = Number(prompt(`Return cards (max ${p.cardsRemaining})`));
+  if (!returned || returned <= 0 || returned > p.cardsRemaining) return;
+  
+  // This is the ONLY place where cardsReturned should increase
   p.cardsReturned += returned;
   p.cardsRemaining -= returned;
   p.moneyOwed = p.cardsRemaining * CARD_PRICE;
-
   persist();
   render();
 }
 
-/* ---------- SETTLE ---------- */
+/* ---------- FULL SETTLE ---------- */
 function settlePerson(i) {
   const p = people[i];
+  const amount = p.cardsRemaining * CARD_PRICE;
 
-  p.paidAmount += p.moneyOwed;
+  p.paidAmount += amount;
   soldCards += p.cardsRemaining;
-  earned += p.moneyOwed;
+  earned += amount;
 
+  // FIX: Do NOT increase p.cardsReturned here.
   p.cardsRemaining = 0;
   p.moneyOwed = 0;
   p.settled = true;
@@ -114,11 +103,42 @@ function settlePerson(i) {
   render();
 }
 
+/* ---------- PARTIAL SETTLE ---------- */
+function partialSettlePerson(i) {
+  const p = people[i];
+  if (p.cardsRemaining <= 0) {
+    settlePerson(i);
+    return;
+  }
+
+  const qty = Number(
+    prompt(`How many cards to settle? (max ${p.cardsRemaining})`)
+  );
+
+  if (!qty || qty <= 0 || qty > p.cardsRemaining) return;
+
+  const amount = qty * CARD_PRICE;
+
+  // Reduce remaining, but DO NOT increase cardsReturned. 
+  // This keeps "Returned" and "Paid" separate.
+  p.cardsRemaining -= qty;
+  p.moneyOwed = p.cardsRemaining * CARD_PRICE;
+  p.paidAmount += amount;
+
+  soldCards += qty;
+  earned += amount;
+
+  if (p.cardsRemaining === 0) {
+    p.settled = true;
+  }
+
+  persist();
+  render();
+}
+
 /* ---------- DELETE ---------- */
 function deletePerson(i) {
-  const p = people[i];
-  if (!confirm(`Delete ${p.name}? This cannot be undone.`)) return;
-
+  if (!confirm("Delete this person?")) return;
   people.splice(i, 1);
   persist();
   render();
@@ -126,32 +146,63 @@ function deletePerson(i) {
 
 /* ---------- DONATION ---------- */
 function addDonation() {
-  const input = document.getElementById("donationAmount");
-  const amount = Number(input.value);
-
-  if (!amount || amount <= 0) {
-    alert("Enter a valid amount");
-    return;
-  }
-
+  const amount = Number(document.getElementById("donationAmount").value);
+  if (!amount || amount <= 0) return;
   earned += amount;
   donations.push({ amount, date: new Date().toLocaleString() });
-
-  input.value = "";
+  document.getElementById("donationAmount").value = "";
   persist();
   render();
+}
+
+/* ---------- BACKUP ---------- */
+function backupData() {
+  const data = { people, donations, totalCards, soldCards, earned };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "event-backup.json";
+  a.click();
+}
+
+/* ---------- RESTORE ---------- */
+function restoreData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const d = JSON.parse(reader.result);
+    people = d.people || [];
+    donations = d.donations || [];
+    totalCards = d.totalCards || 0;
+    soldCards = d.soldCards || 0;
+    earned = d.earned || 0;
+    persist();
+    render();
+    alert("Backup restored");
+  };
+  reader.readAsText(file);
+}
+
+/* ---------- EXCEL ---------- */
+function exportExcel() {
+  let csv = "Name,Phone,Taken,Returned,Remaining,Owed,Paid,Status\n";
+  people.forEach(p => {
+    csv += `${p.name},${p.phone},${p.cardsTaken},${p.cardsReturned},${p.cardsRemaining},${p.moneyOwed},${p.paidAmount},${p.settled ? "SETTLED" : "OWES"}\n`;
+  });
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "event-report.csv";
+  a.click();
 }
 
 /* ---------- RESET ---------- */
 function resetAll() {
   if (!confirm("Reset everything?")) return;
-
   people = [];
   donations = [];
-  totalCards = 0;
-  soldCards = 0;
-  earned = 0;
-
+  totalCards = soldCards = earned = 0;
   persist();
   render();
 }
@@ -161,36 +212,34 @@ function render() {
   const list = document.getElementById("peopleList");
   const table = document.querySelector("#statusTable tbody");
 
-  const unpaidCards = people.reduce((s, p) => s + p.cardsRemaining, 0);
-  const remainingCards = totalCards - unpaidCards - soldCards;
+  const unpaid = people.reduce((s, p) => s + p.cardsRemaining, 0);
+  const remaining = totalCards - unpaid - soldCards;
 
   document.getElementById("totalCards").textContent = totalCards;
-  document.getElementById("givenCards").textContent = unpaidCards;
+  document.getElementById("givenCards").textContent = unpaid;
   document.getElementById("soldCards").textContent = soldCards;
-  document.getElementById("remainingCards").textContent = remainingCards;
-  document.getElementById("totalOwed").textContent = `$${unpaidCards * CARD_PRICE}`;
+  document.getElementById("remainingCards").textContent = remaining;
+  document.getElementById("totalOwed").textContent = `$${unpaid * CARD_PRICE}`;
   document.getElementById("earned").textContent = `$${earned}`;
 
-  /* PEOPLE BAR (HIDES SETTLED) */
   list.innerHTML = "";
   people.forEach((p, i) => {
     if (p.settled) return;
-
     list.innerHTML += `
       <li>
         <b>${p.name}</b> (${p.phone})<br>
         Remaining: ${p.cardsRemaining} — $${p.moneyOwed}
         <div>
-          <button onclick="editPerson(${i})">Edit</button>
-          <button onclick="returnCards(${i})">Return</button>
-          <button onclick="settlePerson(${i})">Settle</button>
+          <button class="small" onclick="editPerson(${i})">Edit</button>
+          <button class="small" onclick="returnCards(${i})">Return</button>
+          <button class="small success" onclick="settlePerson(${i})">Full Settle</button>
+          <button class="small" style="background:#5856d6" onclick="partialSettlePerson(${i})">Partial Settle</button>
           <button class="danger small" onclick="deletePerson(${i})">Delete</button>
         </div>
       </li>
     `;
   });
 
-  /* STATUS TABLE (ALL PEOPLE + TOTAL DONATIONS) */
   table.innerHTML = "";
   people.forEach(p => {
     table.innerHTML += `
@@ -206,27 +255,11 @@ function render() {
       </tr>
     `;
   });
-
-  // Single row for all donations
-  if (donations.length > 0) {
-    const totalDonations = donations.reduce((sum, d) => sum + d.amount, 0);
-    table.innerHTML += `
-      <tr>
-        <td colspan="4">Donations Total</td>
-        <td>-</td>
-        <td>-</td>
-        <td>$${totalDonations}</td>
-        <td>DONATION</td>
-      </tr>
-    `;
-  }
 }
 
 /* ---------- HELPERS ---------- */
 function clearInputs() {
-  document.getElementById("name").value = "";
-  document.getElementById("phone").value = "";
-  document.getElementById("cards").value = "";
+  ["name", "phone", "cards"].forEach(id => document.getElementById(id).value = "");
 }
 
 function persist() {
@@ -237,5 +270,4 @@ function persist() {
   localStorage.setItem("earned", earned);
 }
 
-/* ---------- INIT ---------- */
 render();
